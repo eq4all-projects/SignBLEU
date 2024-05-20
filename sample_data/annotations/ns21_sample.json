@@ -1,0 +1,219 @@
+{
+  "metadata": {
+    "id": "NIA_SL_G1_DELUGEFLOOD003400_1_KU08",
+    "schema_version": "0.4.0",
+    "category": "delugeflood",
+    "translator_id": 112,
+    "editor_id": 1,
+    "signer_id": 112,
+    "annotator_id": 260,
+    "video_date": "2021-10-08",
+    "video_fps": 30,
+    "hand_default": "right",
+    "content_mismatch": {
+      "month_added": [
+        "8월"
+      ]
+    },
+    "filmed_in_studio": true
+  },
+  "text": {
+    "raw": {
+      "korean": "8월 19일 12시 20분 현재 하천수위 상승으로 위험하오니, 하천주변 거주 군민은 안전에 유의하시기 바랍니다"
+    }
+  },
+  "sign_script": {
+    "sign_gestures_both": [
+      {
+        "gloss_id": "날짜:8월19일",
+        "express": "d",
+        "start": 3.978,
+        "end": 5.089,
+        "sentence_loc": {
+          "start": 0,
+          "end": 6
+        },
+        "hold_exact": null,
+        "start_exact": 3.978,
+        "end_exact": 5.089,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "gloss_id": "낮1",
+        "express": "s",
+        "start": 5.25,
+        "end": 5.555,
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 5.25,
+        "end_exact": 5.555,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 5.725,
+        "end": 6.872,
+        "gloss_id": "시:12시20분",
+        "express": "d",
+        "sentence_loc": {
+          "start": 7,
+          "end": 14
+        },
+        "hold_exact": null,
+        "start_exact": 5.725,
+        "end_exact": 6.872,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 8.188,
+        "end": 8.941,
+        "gloss_id": "침수2",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 8.188,
+        "end_exact": 8.941,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 10.643,
+        "end": 10.948,
+        "gloss_id": "가깝다1",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 10.643,
+        "end_exact": 10.948,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 11.951,
+        "end": 12.255,
+        "gloss_id": "계시다1",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 11.951,
+        "end_exact": 12.255,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 12.435,
+        "end": 12.99,
+        "gloss_id": "조심1",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 12.435,
+        "end_exact": 12.99,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      }
+    ],
+    "sign_gestures_strong": [
+      {
+        "start": 7.221,
+        "end": 7.946,
+        "gloss_id": "강1",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 7.221,
+        "end_exact": 7.946,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 9.469,
+        "end": 10.266,
+        "gloss_id": "위험1",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 9.469,
+        "end_exact": 10.266,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      },
+      {
+        "start": 11.154,
+        "end": 11.593,
+        "gloss_id": "지시2#너희",
+        "express": "s",
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 11.154,
+        "end_exact": 11.593,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      }
+    ],
+    "sign_gestures_weak": [
+      {
+        "gloss_id": "지시1#",
+        "express": "s",
+        "start": 9.487,
+        "end": 10.266,
+        "sentence_loc": {
+          "start": "",
+          "end": ""
+        },
+        "hold_exact": null,
+        "start_exact": 9.487,
+        "end_exact": 10.266,
+        "hold_estimate": null,
+        "start_estimate": null,
+        "end_estimate": null
+      }
+    ]
+  },
+  "nms_script": {
+    "Ci": [],
+    "EBf": [],
+    "Mctr": [],
+    "Hs": [],
+    "Hno": [],
+    "Mmo": [],
+    "Mo1": [],
+    "Tbt": []
+  }
+}

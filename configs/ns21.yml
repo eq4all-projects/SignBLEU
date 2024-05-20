@@ -1,0 +1,38 @@
+data:
+  hyp:
+    path: "sample_data/hypotheses.json"
+    format: "elan"  # supported format: elan, ns21, block, gram 
+
+  ref:
+    path: "sample_data/references.json"
+    format: "elan"  # supported format: elan, ns21, block, gram
+
+blockification:
+#   offset_threshold:
+#   channel_keys:
+  start_key: "start"
+  end_key: "end"
+  gloss_key: "gloss"
+  two_hand_map:
+    both: ["left", "right"]
+  channel_combine_map:
+    face1: "face"
+    face2: "face"
+    face3: "face"
+    shoulder1: "shoulder"
+    shoulder2: "shoulder"
+#   mask_key:
+
+gram:
+  time_n: 3
+  channel_n: 2
+  channels: ["face", "left", "right"]
+  method: "2x1d"
+  # swap_map:
+  hand_channels: ["right", "left"]
+  # sep_key:
+
+metric:
+  smoothing: "exponential"
+  effective_order: true
+  verbose: false

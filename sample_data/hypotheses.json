@@ -1,0 +1,101 @@
+[
+    {
+        "face1": [
+            {
+                "gloss": "happy",
+                "start": 0.099,
+                "end": 0.3
+            }
+        ],
+        "face2": [
+            {
+                "gloss": "::excited::",
+                "start": 0.3,
+                "end": 0.8
+            }
+        ],
+        "left": [
+            {
+                "gloss": "hello",
+                "start": 0.1,
+                "end": 0.7
+            },
+            {
+                "gloss": "are",
+                "start": 3.5,
+                "end": 4.1
+            }
+        ],
+        "right": [
+            {
+                "gloss": "oh",
+                "start": 0.099,
+                "end": 0.8
+            },
+            {
+                "gloss": "there",
+                "start": 1.1,
+                "end": 1.7
+            },
+            {
+                "gloss": "you",
+                "start": 2.8,
+                "end": 4.1
+            }
+        ],
+        "both": [
+            {
+                "gloss": "friend",
+                "start": 1.95,
+                "end": 2.7
+            }
+        ]
+    },
+    {
+        "face1": [
+            {
+                "gloss": "happy",
+                "start": 0.099,
+                "end": 0.3
+            }
+        ],
+        "face2": [
+            {
+                "gloss": "::excited::",
+                "start": 0.3,
+                "end": 0.8
+            }
+        ],
+        "left": [
+            {
+                "gloss": "hello",
+                "start": 0.1,
+                "end": 0.7
+            },
+            {
+                "gloss": "are",
+                "start": 3.5,
+                "end": 4.1
+            }
+        ],
+        "right": [
+            {
+                "gloss": "there",
+                "start": 1.1,
+                "end": 1.7
+            },
+            {
+                "gloss": "you",
+                "start": 2.8,
+                "end": 4.1
+            }
+        ],
+        "both": [
+            {
+                "gloss": "friend",
+                "start": 1.95,
+                "end": 2.7
+            }
+        ]
+    }
+]

@@ -1,0 +1,7 @@
+table.autosummary td:first-child {
+  width: 30%;
+}
+
+table.autosummary td:nth-child(2) {
+  width: 70%;
+}

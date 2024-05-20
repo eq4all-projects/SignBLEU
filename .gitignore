@@ -1,0 +1,25 @@
+# caches
+**__pycache__/
+.pytest_cache/
+
+# IDE and editor directories
+.idea
+.vs
+
+# build directories
+build/
+dist/
+*.egg-info/
+
+# binary content
+*.png
+
+# logs
+logs/*
+
+# documentation
+docs/build/
+
+# keep directories with .gitkeep
+!.gitkeep
+

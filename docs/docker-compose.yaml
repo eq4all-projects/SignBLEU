@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  signbleu_docs:
+    container_name: signbleu_docs
+    image: signbleu_docs
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./build/html:/app
+    restart: always
+    ports:
+    - "8123:8080"
