@@ -22,6 +22,12 @@ import numpy as np
 from tqdm import tqdm
 from typing import Any, Dict, List, Optional, Tuple, Union
 from collections.abc import Sequence
+import sys
+if sys.version_info[1] < 9:
+    # workaround to support python3.8 -- planned to support through end of 2024
+    from typing import Sequence as SequenceHint
+else:
+    SequenceHint = Sequence
 
 
 from signbleu.shapley import marginal_count
@@ -213,10 +219,10 @@ SIGNBLEU_NOTES = ("""
     NOTE_STR + NOTE_STR.join(SIGNBLEU_NOTES),
 )
 def signbleu(
-    hypotheses: Sequence[Dict[str, Sequence[Gram]]],
-    references: Sequence[Sequence[Dict[str, Sequence[Gram]]]],
-    hyp_lengths: Sequence[int],
-    ref_lengths: Sequence[int],
+    hypotheses: SequenceHint[Dict[str, SequenceHint[Gram]]],
+    references: SequenceHint[SequenceHint[Dict[str, SequenceHint[Gram]]]],
+    hyp_lengths: SequenceHint[int],
+    ref_lengths: SequenceHint[int],
     smoothing: str = 'exponential',
     weights: Optional[Dict[str, float]] = None,
     effective_order: bool = True,
