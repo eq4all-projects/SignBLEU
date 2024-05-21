@@ -1,6 +1,14 @@
-# -*- coding: utf-8 -*-
-""" 
-Read-Write Lock (from Tyler Neylon at Unbox Research)
+# This module was borrowed and modified from
+# https://gist.github.com/tylerneylon/a7ff6017b7a1f9a506cf75aa23eacfd6
+# Original author: Tyler Neylon at Unbox Research
+# Licensed as: Public Domain
+
+
+"""
+A basic Read-Write Lock.
+
+Code from Tyler Neylon at Unbox Research (released as public domain):
+`https://gist.github.com/tylerneylon/a7ff6017b7a1f9a506cf75aa23eacfd6`
 """
 
 

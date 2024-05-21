@@ -1,0 +1,17 @@
+This product includes software developed by third parties.
+
+Third-Party Components:
+
+1. Transformers Library (https://github.com/huggingface/transformers)
+- Module: `transformers.utils.doc`
+- Original author: The HuggingFace Team
+- Licensed under the Apache License, Version 2.0
+  - No `NOTICE` file was provided with the Transformers Library.
+- Modifications: 
+  - Modified `add_start_docstrings()` and `add_end_docstrings()` functions and borrowed the docstring modification pattern (2024).
+
+2. Tyler Neylon's RWLock Gist (https://gist.github.com/tylerneylon/a7ff6017b7a1f9a506cf75aa23eacfd6)
+- Original author: Tyler Neylon (https://tylerneylon.com/)
+- Licensed as Public Domain
+- Modifications:
+  - Applied basic formatting and docstring modifications (2024).
