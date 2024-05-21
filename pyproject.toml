@@ -1,8 +1,7 @@
 [project]
 name = "SignBLEU"
-description = ""
+description = "An extension of BLEU to handle multi-channel sign language data."
 readme = "README.md"
-license = {file = "LICENSE.txt"}
 authors = [
     {name = "Jung-Ho Kim", email = "stuartkim@eq4all.co.kr"},
     {name = "Mathew Huerta-Enochian", email = "mathew@eq4all.co.kr"},
@@ -17,6 +16,19 @@ dependencies = [
     "click",
     "tqdm",
     "numpy",
+]
+classifiers= [
+    "License :: OSI Approved :: Apache Software License",
+
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 
 [project.optional-dependencies]
@@ -46,5 +58,3 @@ where = ["src"]
 [tool.black]
 line-length = 79
 target-version = ['py311']
-# skip-string-normalization = true
-
