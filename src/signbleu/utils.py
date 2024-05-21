@@ -1,42 +1,37 @@
+# Copyright 2024 EQ4ALL
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import logging
 
 
 logger = logging.getLogger(__name__)
 
 
-import os
 import sys
-import json
 import time
-import requests
 import datetime
 from pathlib import Path
 from collections import deque
 from traceback import format_exc
-from typing import Optional, Union
+from typing import Optional
 from itertools import chain, combinations
-from sacrebleu.compat import (
-    sentence_bleu,
-    corpus_bleu,
-    sentence_chrf,
-    corpus_chrf,
-)
-from sacrebleu.metrics import BLEU, TER
 import string as string_module
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 from signbleu.rwlock import RWLock
-
-
-SERVER = {
-    #'host': 'localhost',
-    'host': '192.168.1.25',
-    'port': 5679,
-}
-
-
-CONT_KEY = ':'
 
 
 COMPRESS_CHAR_MAP = {
@@ -45,483 +40,11 @@ COMPRESS_CHAR_MAP = {
 }
 
 
-def query(
-        path: str,
-        payload: Union[dict, str],
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        method: str = 'GET',
-        headers: dict = {'Content-Type': 'application/json'},
-        ssl: bool = False,
-        retry: int = 0,
-        suppress_warnings: bool = False,
-):
-    known_paths = [
-        'id_to_text',
-        'id_to_block',
-        'text_to_block',
-        'nia_to_block',
-        'linear_to_block',
-        'sign_bleu',
-        'sos',  # separate original strict SignBLEU
-        'metrics',
-        'test',  # temporary path used for testing
-    ]
-    assert path in known_paths, f"Unknown path {path}"
-    if isinstance(payload, dict):
-        payload = json.dumps(payload)
-    if host is None:
-        host = SERVER['host']
-    if port is None:
-        port = SERVER['port']
-    if ssl:
-        protocol = 'https'
-    else:
-        protocol = 'http'
-    url = f"{protocol}://{host}:{port}/{path}"
-    response = None
-    while retry >= 0 and response is None:
-        try:
-            response = requests.request(
-                method,
-                url,
-                headers=headers,
-                data=payload,
-            )
-        except Exception as e:
-            error = repr(e)
-            retry -= 1
-    if response is None:
-        response = {'error': error}
-    else:
-        response = response.json()
-    if suppress_warnings:
-        return response
-    warnings = response.get('warning', list())
-    if len(warnings) > 0:
-        warnings = list(set(response['warning']))
-        for warning in warnings:
-            logger.warn(warning)
-    return response
-
-
-def corpus_bleu_n(
-        hypotheses,
-        references,
-        max_ngram_order=4,
-        lowercase=False,
-        force=False,
-        tokenize='none',
-        smooth_method='exp',
-        smooth_value=None,
-        effective_order=False,
-):
-    scorer = BLEU(
-        lowercase=lowercase,
-        force=force,
-        tokenize=tokenize,
-        smooth_method=smooth_method,
-        smooth_value=smooth_value,
-        effective_order=effective_order,
-        max_ngram_order=max_ngram_order,
-    )
-    return scorer.corpus_score(hypotheses, references).score
-
-
-def sentence_bleu_n(
-        hypotheses,
-        references,
-        max_ngram_order=4,
-        lowercase=False,
-        force=False,
-        tokenize='none',
-        smooth_method='exp',
-        smooth_value=None,
-        effective_order=True,
-):
-    scorer = BLEU(
-        lowercase=lowercase,
-        force=force,
-        tokenize=tokenize,
-        smooth_method=smooth_method,
-        smooth_value=smooth_value,
-        effective_order=effective_order,
-        max_ngram_order=max_ngram_order,
-    )
-    return scorer.sentence_score(hypotheses, references).score
-
-
-def corpus_ter(
-        hypotheses,
-        references,
-        normalized=False,
-        no_punct=False,
-        asian_support=False,
-        case_sensitive=False,
-):
-    scorer = TER(
-        normalized=normalized,
-        no_punct=no_punct,
-        asian_support=asian_support,
-        case_sensitive=case_sensitive,
-    )
-    return scorer.corpus_score(hypotheses, references).score
-
-
-def sentence_ter(
-        hypotheses,
-        references,
-        normalized=False,
-        no_punct=False,
-        asian_support=False,
-        case_sensitive=False,
-):
-    scorer = TER(
-        normalized=normalized,
-        no_punct=no_punct,
-        asian_support=asian_support,
-        case_sensitive=case_sensitive,
-    )
-    return scorer.sentence_score(hypotheses, references).score
-
-
-def strip_gloss(gloss):
-    # return gloss.replace('~1::', '').replace('~2::', '').replace('&1::', '').replace('&2::', '').replace('0::', '').replace('1::', '').replace('2::', '')
-    gloss = gloss.replace('~1::', '')
-    gloss = gloss.replace('~2::', '')
-    gloss = gloss.replace('&1::', '')
-    gloss = gloss.replace('&2::', '')
-    gloss = gloss.replace('1::', '')
-    gloss = gloss.replace('2::', '')
-    if gloss.startswith('::'):
-        gloss = gloss[2:]
-
-    if gloss.startswith('$'):
-        gloss = gloss[1:]
-    if gloss[-1] == '*':
-        gloss = gloss[:-1]
-    if gloss[-1] == '^':
-        gloss = gloss[:-1]
-    return gloss
-
-
-def reduce_to_suji(linear):
-    #### Need to check if hands are removed too ####
-    if linear == '':
-        return linear
-    linear = ' '.join([
-        strip_gloss(gloss)
-        for gloss in linear.split(' ')
-        if not gloss.startswith('::') and gloss != ''
-    ])
-    return linear
-
-
-def suji_bleu(linear0, *linear1, n=4, effective_order=True):
-    r"""
-    Suji-only BLEU (linearization -> remove non glosses -> BLEU)
-    """
-    linear0 = reduce_to_suji(linear0)
-    linear1 = [reduce_to_suji(linear) for linear in linear1]
-    #return sentence_bleu(linear0, linear1, tokenize="none").score
-    return sentence_bleu_n(linear0, linear1, max_ngram_order=n, effective_order=effective_order)
-
-
-def suji_ter(linear0, *linear1, **kwargs):
-    r"""
-    Suji-only TER (linearization -> remove non glosses -> TER)
-    """
-    linear0 = reduce_to_suji(linear0)
-    linear1 = [reduce_to_suji(linear) for linear in linear1]
-    #return sentence_bleu(linear0, linear1, tokenize="none").score
-    return sentence_ter(linear0, linear1, **kwargs)
-
-
-def corpus_suji_bleu(linears0, linears1, n=4):
-    r"""
-    Suji-only BLEU (linearization -> remove non glosses -> BLEU)
-    """
-    linears0 = [
-        reduce_to_suji(linear)
-        for linear in linears0
-    ]
-    linears1 = [
-        [
-            reduce_to_suji(linear) if linear is not None else None
-            for linear in linear_set
-        ]
-        for linear_set in linears1
-    ]
-    #return corpus_bleu(linears0, linears1, tokenize="none").score
-    return corpus_bleu_n(linears0, linears1, max_ngram_order=n)
-
-
-def corpus_suji_ter(linears0, linears1, **kwargs):
-    r"""
-    Suji-only TER (linearization -> remove non glosses -> TER)
-    """
-    linears0 = [
-        reduce_to_suji(linear)
-        for linear in linears0
-    ]
-    linears1 = [
-        [
-            reduce_to_suji(linear) if linear is not None else None
-            for linear in linear_set
-        ]
-        for linear_set in linears1
-    ]
-    #return corpus_bleu(linears0, linears1, tokenize="none").score
-    return corpus_ter(linears0, linears1, **kwargs)
-
-
-def block_to_linear(
-        blocks,
-        left='left',
-        right='right',
-        channels=('left', 'right', 'mouth', 'eyebrow', 'head'),
-):
-    # does not add signs for the both (0::) channel
-    output = list()
-    nms = list(set(channels) - set([left, right]))
-    for block in blocks:
-        for channel in [right, left]:
-            if block.get(channel) is None:
-                continue
-            if channel == right and block[channel][0] != ':':
-                gloss = '1::' + block[channel].replace(':', '')
-                if block.get(left) is not None and block[left][0] == ':':
-                    gloss = '~' + gloss
-                output.append(gloss)
-            if channel == left and block[channel][0] != ':':
-                gloss = '2::' + block[channel].replace(':', '')
-                if block.get(right) is not None and block[right][0] == ':':
-                    gloss = '~' + gloss
-                elif block.get(right) is not None and block[right][0] != ':':
-                    gloss = '&' + gloss
-                output.append(gloss)
-            for nms_channel in nms:
-                if block.get(nms_channel) is not None:
-                    output.append('::' + block['mouth'].replace(':', '').replace(' ', '_'))
-    return ' '.join(output)
-
-
-def process_hands(linear, separate_hands):
-    def is_handed(gloss):
-        return gloss[:2] in ['~1', '&1', '~2', '&2', '0:', '1:', '2:', '::']
-    def is_suji(gloss):
-        try:
-            re.match('(~|&)?([0-2]::)?[A-Za-z]+[0-9][0-9]?', gloss).group()
-            return True
-        except:
-            return False
-    def separate_hand(gloss):
-        if not is_suji(gloss):
-            return gloss
-        return ':: '.join(gloss.split('::'))
-
-    linear = [
-        gloss if (is_handed(gloss) or not is_suji(gloss)) else '0::' + gloss
-        for gloss in linear.split(' ')
-    ]
-    linear = [
-        separate_hand(gloss) if separate_hands else gloss
-        for gloss in linear
-    ]
-    return ' '.join(linear)
-
-
-def linear_bleu(linear0, *linear1, separate_hands=False, n=4, effective_order=True):
-    r"""
-    BLEU calculated on the linearization (linearization -> add space between hand and gloss -> BLEU)
-
-    Args:
-        linear0
-        *linear1
-        separate_hands
-        n (int, optional): the ngram order
-        effective_order: If True, use only non-zero ngram scores
-            (for order <= `n`\). If False, use the order `n`\.
-    """
-    linear0 = process_hands(linear0, separate_hands=separate_hands)
-    linear1 = [
-        process_hands(linear, separate_hands=separate_hands)
-        for linear in linear1
-    ]
-    #return sentence_bleu(linear0, linear1, tokenize="none").score
-    return sentence_bleu_n(linear0, linear1, max_ngram_order=n, effective_order=effective_order)
-
-
-def linear_ter(linear0, *linear1, separate_hands=False, **kwargs):
-    r"""
-    """
-    linear0 = process_hands(linear0, separate_hands=separate_hands)
-    linear1 = [
-        process_hands(linear, separate_hands=separate_hands)
-        for linear in linear1
-    ]
-    #return sentence_bleu(linear0, linear1, tokenize="none").score
-    return sentence_ter(linear0, linear1, **kwargs)
-
-
-def linear_chrf(linear0, *linear1, separate_hands=False, word_order=0):
-    r"""
-    CHRF calculated on the linearization (linearization -> add space between hand and gloss -> CHRF)
-    """
-    linear0 = process_hands(linear0, separate_hands=separate_hands)
-    linear1 = [
-        process_hands(linear, separate_hands=separate_hands)
-        for linear in linear1
-    ]
-    return sentence_chrf(linear0, linear1, word_order=word_order).score
-
-
-def suji_chrf(linear0, *linear1, separate_hands=False, word_order=0):
-    r"""
-    CHRF calculated on the suji linearization (linearization -> suji -> add space between hand and gloss -> CHRF)
-    """
-    linear0 = reduce_to_suji(linear0)
-    linear1 = [
-        reduce_to_suji(linear)
-        for linear in linear1
-    ]
-    return sentence_chrf(linear0, linear1, word_order=word_order).score
-
-
-def corpus_linear_bleu(linears0, linears1, separate_hands=False, n=4):
-    r"""
-    BLEU calculated on the linearization (linearization -> add space between hand and gloss -> BLEU)
-    """
-    linears0 = [
-        process_hands(linear, separate_hands=separate_hands)
-        for linear in linears0
-    ]
-    linears1 = [
-        [
-            process_hands(linear, separate_hands=separate_hands) if linear is not None else None
-            for linear in linear_set
-        ]
-        for linear_set in linears1
-    ]
-    #return corpus_bleu(linears0, linears1, tokenize="none").score
-    return corpus_bleu_n(linears0, linears1, max_ngram_order=n)
-
-
-def corpus_linear_ter(linears0, linears1, separate_hands=False, **kwargs):
-    r"""
-    """
-    linears0 = [
-        process_hands(linear, separate_hands=separate_hands)
-        for linear in linears0
-    ]
-    linears1 = [
-        [
-            process_hands(linear, separate_hands=separate_hands) if linear is not None else None
-            for linear in linear_set
-        ]
-        for linear_set in linears1
-    ]
-    return corpus_ter(linears0, linears1, **kwargs)
-
-
-def corpus_linear_chrf(linears0, linears1, separate_hands=False, word_order=0):
-    r"""
-    CHRF calculated on the linearization (linearization -> add space between hand and gloss -> CHRF)
-    """
-    linears0 = [
-        process_hands(linear, separate_hands=separate_hands)
-        for linear in linears0
-    ]
-    linears1 = [
-        [
-            process_hands(linear, separate_hands=separate_hands) if linear is not None else None
-            for linear in linear_set
-        ]
-        for linear_set in linears1
-    ]
-    return corpus_chrf(linears0, linears1, word_order=word_order).score
-
-
-def corpus_suji_chrf(linears0, linears1, separate_hands=False, word_order=0):
-    r"""
-    CHRF calculated on the suji linearization (linearization -> remove NMS -> add space between hand and gloss -> CHRF)
-    """
-    linears0 = [
-        reduce_to_suji(linear)
-        for linear in linears0
-    ]
-    linears1 = [
-        [
-            reduce_to_suji(linear) if linear is not None else None
-            for linear in linear_set
-        ]
-        for linear_set in linears1
-    ]
-    return corpus_chrf(linears0, linears1, word_order=word_order).score
-
-
-def merge_consecutive_identical_blocks(blocks):
-    def gloss_eq(b1, b2, c):
-        if all(b.get(c) is None for b in [b1, b2]):
-            return True
-        elif any(b.get(c) is None for b in [b1, b2]):
-            return False
-        return b1[c].replace(':', '') == b2[c].replace(':', '')
-
-    def gloss_cont(b1, b2, c):
-        if all(b.get(c) is None for b in [b1, b2]):
-            return True
-        elif any(b.get(c) is None for b in [b1, b2]):
-            return False
-        return b1[c][-1] == b2[c][0] == ':'
-
-    delete_inds = list()
-    for block_i in range(len(blocks) - 1):
-        block1 = blocks[block_i]
-        block2 = blocks[block_i+1]
-        channels = set(list(block1.keys()) + list(block2.keys()))
-        gloss_match = all(
-            gloss_eq(block1, block2, channel) and gloss_cont(block1, block2, channel)
-            for channel in channels
-        )
-        if gloss_match:
-            delete_inds.append(block_i + 1)
-    for ind in delete_inds[::-1]:
-        for channel in blocks[ind]:
-            text1 = blocks[ind-1][channel]
-            text2 = blocks[ind][channel]
-            if text2 is None:
-                continue
-            if text2[-1] != ':':
-                text1 = text1[:-1]
-            blocks[ind-1][channel] = text1
-        blocks.pop(ind)
-    return blocks
-
-
-def extract_manual_sub_blocks(blocks, manual_channels=('right', 'left')):
-    blocks = [
-        {
-            channel: gloss
-            for channel, gloss in block.items()
-            if channel in manual_channels
-        }
-        for block in blocks
-    ]
-    blocks = [block for block in blocks if len(block) > 0]
-    blocks = merge_consecutive_identical_blocks(blocks)
-    return blocks
-
-
 def has_value(d, k):
     r"""
     Check if the dict `d` has a value at key `k`\.
     """
     return d.get(k) is not None
-
-
-def remove_continued(gloss):
-    return gloss.replace(CONT_KEY, '')
 
 
 def compress_to_text(value):
@@ -779,19 +302,6 @@ class Background:
         self.executor.shutdown(wait=False)
 
 
-def nia_is_ku(name):
-    return str(name).split('_')[-1].startswith('KU')
-
-
-def nia_get_instance_id(name):
-    name = '_'.join(str(name).split('_')[-6:])
-    return name.split('.')[0]
-
-
-def nia_get_group_id(name):
-    return str(name).split('_')[-3]
-
-
 def _log_error(e, path):
     path = Path(path) / f'error_{compress_to_text(time.time())}.txt'
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -815,6 +325,12 @@ def powerset(iterable, n, start=1):
     s = list(iterable)
     n = min(len(s), n)
     return chain.from_iterable(combinations(s, r) for r in range(start, n+1))
+
+
+# The below code was borrowed/adapted from Huggingface's Transformers Library
+# (http://github.com/huggingface/transformers/src/transformers/utils/doc.py)
+# Original author: The Huggingface Team
+# Licensed under Apache 2.0
 
 
 ARGS_STR = """

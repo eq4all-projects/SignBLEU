@@ -1,3 +1,18 @@
+# Copyright 2024 EQ4ALL
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 r"""
 Module for calculating grams.
 
@@ -30,27 +45,11 @@ from collections.abc import (
 
 
 import signbleu.constants as CON
-from signbleu.shapley import marginal_count
 from signbleu.utils import (
-    block_to_linear,
     powerset,
-    add_start_docstrings,
     add_end_docstrings,
-    add_start_init_docstrings,
-    add_end_init_docstrings,
     ARGS_STR,
     NOTE_STR,
-)
-from signbleu.block import (
-    dict_to_block,
-    BLOCK_ID,
-    DICT_TO_BLOCK_ARGS,
-    DICT_TO_BLOCK_PARAMS,
-)
-from signbleu.outputs import (
-    Output,
-    OutputConstructor,
-    Signature,
 )
 
 
