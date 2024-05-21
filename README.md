@@ -20,7 +20,7 @@ SignBLEU is a metric for evaluating the results of multichannel sign language tr
 Install from source:
 
 ```shell
-git clone http://192.168.1.111:3000/EQ4ALL-Development/SignBLEU
+git clone https://github.com/eq4all-projects/SignBLEU.git
 cd SignBLEU
 pip install -e .
 ```
@@ -263,7 +263,7 @@ print(score)
 The documentation can be built using sphinx. Make sure to install the
 development version of SignBLEU:
 ```shell
-git clone http://192.168.1.111:3000/EQ4ALL-Development/SignBLEU
+git clone https://github.com/eq4all-projects/SignBLEU.git
 cd SignBLEU
 pip install -e .[dev]
 ```
@@ -296,16 +296,13 @@ If you use SignBLEU, please cite the following:
 
 # TODO
 
-There is a lot of cleaning up todo. I am currently in the process of re-testing
-(re-discovering?) all of the parameters we tested while writing the paper.
-- Improve Gram and Gram2D objects.
-- Improve gramming function (too many parameters, too slow).
-- Change API argument parsing to just use argparse for better formatting control.
-- Make sure that channels do not contain special identifiers ("_", )
-- Double check that only channel glosses are getting sorted when turned into
-  grams and that temporal glosses are left as-is.
-- Bugfix combine_hand_channels parameter for time_channel_grams
-- Bugfix `original_y_gram=False`\. `original_y_gram=True` is being calculated
-  correctly, but `original_y_gram=False` with `whitepsace=True` drops
-  some None pairings.
-- Add support for .eaf loading (need to parse flags or known formats).
+There is a lot of cleaning up todo.
+- Improve documentation and quick start guide.
+  - Bugfix NS21, PDC, and NCSLGR examples.
+  - Fix/improve API.
+- Refactor temporal and channel gram functions.
+- Make sure special characters are not hardcoded.
+- General refactoring to reduce nesting.
+- Run formatting with Black.
+- Add support for 2D grams.
+- Add alternative weighting schemes.
