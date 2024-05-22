@@ -203,18 +203,18 @@ class Output(dict):
     @property
     def score(self):
         r"""
-        Return the best-guess score.
-
-        Note:
-            This will probably be removed as it is not very helpful.
+        Return the corpus SignBLEU score.
         """
-        if 'score' in self:
-            return self['score']
         if 'corpus_signbleu' in self:
             return self['corpus_signbleu']
-        if 'instance_signbleu' in self:
-            return self['instance_signbleu']
         raise ValueError()
+
+    @property
+    def scores(self):
+        r"""
+        Return all score information.
+        """
+        return dict(self)
 
     @property
     def signature(self):
